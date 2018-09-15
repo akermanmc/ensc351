@@ -8,42 +8,50 @@ namespace {
     ofstream *fileStream;
 }
 
+// begins trace generation, opens write file
 void trace_start(char *filename) {
     fileStream = new ofstream();
     fileStream->open(filename, ofstream::out);
     *fileStream<<"["<<endl;
 }
 
+// writes event start trace to file
 void trace_event_start(char *name, char *categories, char *arguments) {
     *fileStream << "{\"name\": \"" << name << "\", \"cat\": \"" << categories
                << "\", \"ph\": \"" << "B" <<"\", \"ts\": "<< "123"
                <<", \"pid\": "<< "2343"<< ", \"tid\": " << "2347" <<"}," << endl;
 }
 
+// writes event end trace to file
 void trace_event_end(char *arguments) {
     *fileStream << "{\"ph\": \""<<"E"<<"\", \"ts\": "<< "143"
                <<", \"pid\": "<< "2343"<< ", \"tid\": "
                << "2347" <<"}," << endl;
 }
 
+// writes instant event trace to file
 void trace_instant_global(char *name) {
     *fileStream << "{\"name\": \"" << name << "\", \"ph\": \"" << "i"
                <<"\", \"ts\": "<< "136" <<", \"pid\": "<< "2343"<< ", \"tid\": "
                << "2347" <<", \"s\": \"t\"}," << endl;
 }
 
+// writes object event creation trace to file
 void trace_object_new(char *name, void *obj_pointer) {
 
 }
 
+// writes counter event to file
 void trace_counter(char *name, char *key, char *value) {
 
 }
 
+// not sure what this is supposed to do...
 void trace_flush() {
 
 }
 
+// signals the end of trace writing in the program, closes the write file
 void trace_end() {
     *fileStream << "{\"name\": \"" << "DUMMY" << "\", \"ph\": \"" << "i"
                <<"\", \"ts\": "<< "1" <<", \"pid\": "<< 1<< ", \"tid\": "
@@ -54,6 +62,14 @@ void trace_end() {
     fileStream = nullptr;
 }
 
+void traceEntry::printPhase(){
+	cout << phase << endl;
+}
+void traceEntry::printName(){
+	cout << name << endl;
+}
+
+// writes appropriate trace entry to file depending on event description variable values
 void traceEntry::WriteToFile() {
     switch(phase)
     {
