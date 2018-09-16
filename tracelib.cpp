@@ -1,42 +1,88 @@
 #include "tracelib.h"
-#include <iostream>
 #include <fstream>
 #include <cassert>
 #include <chrono>
+#include <cstdio>
+#include <iostream>
+#include <cstring>
+
 using namespace std;
 
 namespace {
     ofstream *fileStream;
+    traceEntry *entryArray;
+    int entryCounter;
+    chrono::time_point<chrono::system_clock> start_time;
+    chrono::time_point<chrono::system_clock> current_time;
+    char *buff;
 }
 
 // begins trace generation, opens write file, starts timer
 void trace_start(char *filename) {
+    //allocate file stream and open it
     fileStream = new ofstream();
     fileStream->open(filename, ofstream::out);
+
+    //allocate array of 10,000 event entries
+    entryArray = new traceEntry[maxEntries];
+    entryCounter = 0;
+
+    //allocate char buff
+    buff = new char[200];
+
+    //write first square bracket open to file
     *fileStream<<"["<<endl;
+
+    //initialize start time for trace
+    start_time = chrono::system_clock::now();
 }
 
 
 
-// writes event start trace to file
+// saves event start trace to entries array
 void trace_event_start(char *name, char *categories, char *arguments) {
-    *fileStream << "{\"name\": \"" << name << "\", \"cat\": \"" << categories
-               << "\", \"ph\": \"" << "B" <<"\", \"ts\": "<< arguments
-               <<", \"pid\": "<< "2343"<< ", \"tid\": " << "2347" <<"}," << endl;
+    if(entryCounter >= maxEntries)
+        trace_flush();
+    current_time = chrono::system_clock::now();
+    entryArray[entryCounter].setTS(chrono::duration_cast<chrono::microseconds>(
+            current_time - start_time).count());
+    entryArray[entryCounter].setName(name);
+    entryArray[entryCounter].setCat(categories);
+    entryArray[entryCounter].setPID(1);
+    entryArray[entryCounter].setTID(1);
+    entryArray[entryCounter].setPhase('B');
+    if(arguments != nullptr)
+        entryArray[entryCounter].setArgs(arguments);
+    entryCounter++;
 }
 
-// writes event end trace to file
+// saves event end trace to entries array
 void trace_event_end(char *arguments) {
-    *fileStream << "{\"ph\": \""<<"E"<<"\", \"ts\": "<< arguments
-               <<", \"pid\": "<< "2343"<< ", \"tid\": "
-               << "2347" <<"}," << endl;
+    if(entryCounter >= maxEntries)
+        trace_flush();
+    current_time = chrono::system_clock::now();
+    entryArray[entryCounter].setTS(chrono::duration_cast<chrono::microseconds>(
+            current_time - start_time).count());
+    entryArray[entryCounter].setPID(1);
+    entryArray[entryCounter].setTID(1);
+    entryArray[entryCounter].setPhase('E');
+    if(arguments != nullptr)
+        entryArray[entryCounter].setArgs(arguments);
+    entryCounter++;
 }
 
-// writes instant event trace to file
-void trace_instant_global(char *name, char* arguments) {
-    *fileStream << "{\"name\": \"" << name << "\", \"ph\": \"" << "i"
-               <<"\", \"ts\": "<< arguments <<", \"pid\": "<< "2343"<< ", \"tid\": "
-               << "2347" <<", \"s\": \"t\"}," << endl;
+// saves instant type events to entries array
+void trace_instant_global(char *name) {
+    if(entryCounter >= maxEntries)
+        trace_flush();
+    current_time = chrono::system_clock::now();
+    entryArray[entryCounter].setTS(chrono::duration_cast<chrono::microseconds>(
+            current_time - start_time).count());
+    entryArray[entryCounter].setName(name);
+    entryArray[entryCounter].setPID(1);
+    entryArray[entryCounter].setTID(1);
+    entryArray[entryCounter].setPhase('i');
+    entryCounter++;
 }
 
 // writes object event creation trace to file
@@ -50,19 +96,22 @@ void trace_counter(char *name, char *key, char *value) {
 }
 
 // not sure what this is supposed to do...
+// ---will be used to flush all the entries we have in our 10,000 size entry array to file
 void trace_flush() {
-
+    for (int i = 0; i < entryCounter; i++)
+        entryArray[i].WriteToFile();
+    entryCounter = 0;
 }
 
 // signals the end of trace writing in the program, closes the write file
-void trace_end(char* arguments) {
-	
-    *fileStream << "{\"name\": \"" << "TRACE_END" << "\", \"ph\": \"" << "i"
-               <<"\", \"ts\": "<< arguments <<", \"pid\": "<< 1<< ", \"tid\": "
-               << 1 <<", \"s\": \"t\"}" << endl;
-    *fileStream<<"]"<<endl;
+void trace_end() {
+	trace_flush();
+	sprintf(buff,"{\"name\": \"TRACE_END\", \"ph\": \"i\", \"ts\": 0, \"pid\": 1, \"tid\": 1, \"s\": \"t\"}");
+    *fileStream<<buff<<endl<<"]"<<endl;
     fileStream->close();
     delete fileStream;
+    delete[] entryArray;
+    delete[] buff;
     fileStream = nullptr;
 }
 
