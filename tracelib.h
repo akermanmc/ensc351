@@ -32,7 +32,7 @@ void trace_event_start(char* name, char* categories, char* arguments = nullptr);
 
 void trace_event_end(char* arguments = nullptr);
 
-void trace_instant_global(char* name);
+void trace_instant_global(char* name, char* arguments);
 
 void trace_object_new(char* name, void* obj_pointer);
 
@@ -40,6 +40,6 @@ void trace_counter(char* name, char* key, char* value);
 
 void trace_flush();
 
-void trace_end();
+void trace_end(char* arguments);
 
 #endif //PROJECT_TRACELIB_H
