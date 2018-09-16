@@ -2,6 +2,9 @@
 #include <iostream>
 #include <fstream>
 #include <cassert>
+#include <sys/time.h>
+#include <ctime>
+#include <unistd.h>
 using namespace std;
 
 namespace {
@@ -15,24 +18,33 @@ void trace_start(char *filename) {
     *fileStream<<"["<<endl;
 }
 
+
+struct timeval end;
+
 // writes event start trace to file
 void trace_event_start(char *name, char *categories, char *arguments) {
+	struct timeval start;
+	gettimeofday(&start, NULL);
     *fileStream << "{\"name\": \"" << name << "\", \"cat\": \"" << categories
-               << "\", \"ph\": \"" << "B" <<"\", \"ts\": "<< "123"
+               << "\", \"ph\": \"" << "B" <<"\", \"ts\": "<< start.tv_usec
                <<", \"pid\": "<< "2343"<< ", \"tid\": " << "2347" <<"}," << endl;
 }
 
 // writes event end trace to file
 void trace_event_end(char *arguments) {
-    *fileStream << "{\"ph\": \""<<"E"<<"\", \"ts\": "<< "143"
+	struct timeval end;
+	gettimeofday(&end, NULL);
+    *fileStream << "{\"ph\": \""<<"E"<<"\", \"ts\": "<< end.tv_usec
                <<", \"pid\": "<< "2343"<< ", \"tid\": "
                << "2347" <<"}," << endl;
 }
 
 // writes instant event trace to file
 void trace_instant_global(char *name) {
+	struct timeval timeNow;
+	gettimeofday(&timeNow, NULL);
     *fileStream << "{\"name\": \"" << name << "\", \"ph\": \"" << "i"
-               <<"\", \"ts\": "<< "136" <<", \"pid\": "<< "2343"<< ", \"tid\": "
+               <<"\", \"ts\": "<< timeNow.tv_usec <<", \"pid\": "<< "2343"<< ", \"tid\": "
                << "2347" <<", \"s\": \"t\"}," << endl;
 }
 
@@ -53,8 +65,10 @@ void trace_flush() {
 
 // signals the end of trace writing in the program, closes the write file
 void trace_end() {
+	struct timeval timeNow;
+	gettimeofday(&timeNow, NULL);
     *fileStream << "{\"name\": \"" << "DUMMY" << "\", \"ph\": \"" << "i"
-               <<"\", \"ts\": "<< "1" <<", \"pid\": "<< 1<< ", \"tid\": "
+               <<"\", \"ts\": "<< timeNow.tv_usec <<", \"pid\": "<< 1<< ", \"tid\": "
                << 1 <<", \"s\": \"t\"}" << endl;
     *fileStream<<"]"<<endl;
     fileStream->close();
