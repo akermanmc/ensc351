@@ -106,7 +106,7 @@ void trace_flush() {
 // signals the end of trace writing in the program, closes the write file
 void trace_end() {
 	trace_flush();
-	sprintf(buff,"{\"name\": \"TRACE_END\", \"ph\": \"i\", \"ts\": 0, \"pid\": 1, \"tid\": 1, \"s\": \"t\"}");
+	sprintf(buff,"{\"name\": \"TRACE_END\", \"ph\": \"i\", \"ts\": 0, \"pid\": 1, \"tid\": 1, \"s\": \"g\"}");
     *fileStream<<buff<<endl<<"]"<<endl;
     fileStream->close();
     delete fileStream;

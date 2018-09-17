@@ -5,24 +5,34 @@
 
 using namespace std;
 
-void add(const int &, const int &);
+int multiply(int, int);
 
 int main(){
     char filename[10] = "test.json";
     trace_start(filename);
-
-    for (int i = 0; i < 200; i++)
-        add(40, 40);
+    int g = 40;
+    int h = 40;
+    for (int i =0; i< 11000; i++)
+        multiply(g, h);
 
     trace_end();
     return 0;
 }
 
-void add(const int &a, const int &b)
+int multiply(int a, int b)
 {
-    char name[10] = "add";
-    char cat[10] = "hero";
+    char name[10];
+    char cat[10];
+    sprintf(name, "multiply%d",b);
+    sprintf(cat, "foo%d", b);
     trace_event_start(name,cat);
-    int c = a+b;
+    if (b < 0)
+    {
+        trace_event_end();
+        return a;
+    }
+    b--;
+    int c = a + multiply(a,b);
     trace_event_end();
+    return c;
 }
