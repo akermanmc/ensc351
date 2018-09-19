@@ -11,10 +11,10 @@ const int maxEntries = 10000;
 // and reserve that memory in the beginning
 class traceEntry{
 public:
-    traceEntry() : name(), cat(), phase('\0'), ts(0), pid(0), tid(0), arguments() {}
+    traceEntry() : name(), cat(), phase('\0'), ts(0), pid(0), tid(0), arguments(), obj(nullptr) {}
     traceEntry(const char* _name, const char* _cat, const char _phase, const long long int _ts,const int _pid,
-            const int _tid,const  char* _arguments)
-    : name(_name), cat(_cat), phase(_phase), ts(_ts), pid(_pid), tid(_tid), arguments(_arguments) {}
+            const int _tid, const  char* _arguments, const void* _obj)
+    : name(_name), cat(_cat), phase(_phase), ts(_ts), pid(_pid), tid(_tid), arguments(_arguments), obj((void*)_obj) {}
 
     //setters
     void setName(const char* _name) {name = string(_name);}
@@ -24,6 +24,7 @@ public:
     void setPID(const int _pid = 1) {pid = _pid;}
     void setTID(const int _tid = 1) {tid = _tid;}
     void setArgs(const char* args) {arguments = string(args);}
+    void setObjRef(const void* _obj) {obj = (void*)_obj;}
 
     void printPhase();
     void printName();
@@ -36,21 +37,24 @@ private:
     long long int ts;	// trace event time stamp
     int pid;			// process ID
     int tid;			// thread ID
+    void* obj;          // object even obj ref
 };
 
 // --------------------------------------------------------------------------------
 
-void trace_start(char* filename);
+void trace_start(const char* filename);
 
-void trace_event_start(char* name, char* categories, char* arguments = nullptr);
+void trace_event_start(const char* name, const char* categories, const char* arguments = nullptr);
 
-void trace_event_end(char* arguments = nullptr);
+void trace_event_end(const char* arguments = nullptr);
 
-void trace_instant_global(char* name);
+void trace_instant_global(const char* name);
 
-void trace_object_new(char* name, void* obj_pointer);
+void trace_object_new(const char* name, const void* obj_pointer);
 
-void trace_counter(char* name, char* key, char* value);
+void trace_object_gone(const char* name, const void* obj_pointer);
+
+void trace_counter(const char* name, const char* key, const char* value);
 
 void trace_flush();
 

@@ -12,7 +12,7 @@ int main(){
     trace_start(filename);
     int g = 40;
     int h = 40;
-    for (int i =0; i< 11000; i++)
+    for (int i =0; i< 5000; i++)
         multiply(g, h);
 
     trace_end();
@@ -26,6 +26,7 @@ int multiply(int a, int b)
     sprintf(name, "multiply%d",b);
     sprintf(cat, "foo%d", b);
     trace_event_start(name,cat);
+    trace_object_new("text", &name);
     if (b < 0)
     {
         trace_event_end();
@@ -33,6 +34,7 @@ int multiply(int a, int b)
     }
     b--;
     int c = a + multiply(a,b);
+    trace_object_gone("text", &name);
     trace_event_end();
     return c;
 }

@@ -18,7 +18,7 @@ namespace {
 }
 
 // begins trace generation, opens write file, starts timer
-void trace_start(char *filename) {
+void trace_start(const char *filename) {
     //allocate file stream and open it
     fileStream = new ofstream();
     fileStream->open(filename, ofstream::out);
@@ -40,7 +40,7 @@ void trace_start(char *filename) {
 
 
 // saves event start trace to entries array
-void trace_event_start(char *name, char *categories, char *arguments) {
+void trace_event_start(const char *name, const char *categories, const char *arguments) {
     if(entryCounter >= maxEntries)
         trace_flush();
     current_time = chrono::system_clock::now();
@@ -57,7 +57,7 @@ void trace_event_start(char *name, char *categories, char *arguments) {
 }
 
 // saves event end trace to entries array
-void trace_event_end(char *arguments) {
+void trace_event_end(const char *arguments) {
     if(entryCounter >= maxEntries)
         trace_flush();
     current_time = chrono::system_clock::now();
@@ -72,7 +72,7 @@ void trace_event_end(char *arguments) {
 }
 
 // saves instant type events to entries array
-void trace_instant_global(char *name) {
+void trace_instant_global(const char *name) {
     if(entryCounter >= maxEntries)
         trace_flush();
     current_time = chrono::system_clock::now();
@@ -86,12 +86,22 @@ void trace_instant_global(char *name) {
 }
 
 // writes object event creation trace to file
-void trace_object_new(char *name, void *obj_pointer) {
-
+void trace_object_new(const char *name, const void *obj_pointer) {
+    if(entryCounter >= maxEntries)
+        trace_flush();
+    current_time = chrono::system_clock::now();
+    entryArray[entryCounter].setTS(chrono::duration_cast<chrono::microseconds>(
+            current_time - start_time).count());
+    entryArray[entryCounter].setName(name);
+    entryArray[entryCounter].setPID(1);
+    entryArray[entryCounter].setTID(1);
+    entryArray[entryCounter].setPhase('N');
+    entryArray[entryCounter].setObjRef(obj_pointer);
+    entryCounter++;
 }
 
 // writes counter event to file
-void trace_counter(char *name, char *key, char *value) {
+void trace_counter(const char *name, const char *key, const char *value) {
 
 }
 
@@ -115,6 +125,20 @@ void trace_end() {
     fileStream = nullptr;
 }
 
+void trace_object_gone(const char *name, const void *obj_pointer) {
+    if(entryCounter >= maxEntries)
+        trace_flush();
+    current_time = chrono::system_clock::now();
+    entryArray[entryCounter].setTS(chrono::duration_cast<chrono::microseconds>(
+            current_time - start_time).count());
+    entryArray[entryCounter].setName(name);
+    entryArray[entryCounter].setPID(1);
+    entryArray[entryCounter].setTID(1);
+    entryArray[entryCounter].setPhase('D');
+    entryArray[entryCounter].setObjRef(obj_pointer);
+    entryCounter++;
+}
+
 void traceEntry::printPhase(){
 	cout << phase << endl;
 }
@@ -128,18 +152,28 @@ void traceEntry::WriteToFile() {
     {
         case 'E':
             *fileStream << "{\"ph\": \""<<phase<<"\", \"ts\": "<< ts
-                <<", \"pid\": "<< pid<< ", \"tid\": "
-                << tid <<"}," << endl;
+                        <<", \"pid\": "<< pid<< ", \"tid\": "
+                        << tid <<"}," << endl;
             break;
         case 'i':
             *fileStream << "{\"name\": \"" << name << "\", \"ph\": \"" << phase
-            <<"\", \"ts\": "<< ts <<", \"pid\": "<< pid<< ", \"tid\": "
-            << tid <<", \"s\": \"g\"}," << endl;
+                        <<"\", \"ts\": "<< ts <<", \"pid\": "<< pid<< ", \"tid\": "
+                        << tid <<", \"s\": \"g\"}," << endl;
             break;
         case 'B':
             *fileStream << "{\"name\": \"" << name << "\", \"cat\": \"" << cat
-            << "\", \"ph\": \"" << phase <<"\", \"ts\": "<< ts
-            <<", \"pid\": "<< pid<< ", \"tid\": " << tid <<"}," << endl;
+                        << "\", \"ph\": \"" << phase <<"\", \"ts\": "<< ts
+                        <<", \"pid\": "<< pid<< ", \"tid\": " << tid <<"}," << endl;
+            break;
+        case 'N':
+            *fileStream << "{\"name\": \"" << name << "\", \"id\": \"" << obj
+                        << "\", \"ph\": \"" << phase <<"\", \"ts\": "<< ts
+                        <<", \"pid\": "<< pid<< ", \"tid\": " << tid <<"}," << endl;
+            break;
+        case 'D':
+            *fileStream << "{\"name\": \"" << name << "\", \"id\": \"" << obj
+                        << "\", \"ph\": \"" << phase <<"\", \"ts\": "<< ts
+                        <<", \"pid\": "<< pid<< ", \"tid\": " << tid <<"}," << endl;
             break;
         default: assert(0);
     }
