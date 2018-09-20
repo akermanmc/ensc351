@@ -10,7 +10,7 @@ using namespace std;
 
 namespace {
     ofstream *fileStream;
-    traceEntry *entryArray;
+    traceEntry *entryArray; // array of trace entries
     int entryCounter;
     chrono::time_point<chrono::system_clock> start_time;
     chrono::time_point<chrono::system_clock> current_time;
@@ -101,12 +101,22 @@ void trace_object_new(const char *name, const void *obj_pointer) {
 }
 
 // writes counter event to file
+// single series only***
 void trace_counter(const char *name, const char *key, const char *value) {
-
+	if(entryCounter >= maxEntries)
+        trace_flush();
+    current_time = chrono::system_clock::now();
+    entryArray[entryCounter].setTS(chrono::duration_cast<chrono::microseconds>(
+            current_time - start_time).count());
+    entryArray[entryCounter].setName(name);
+    entryArray[entryCounter].setPhase('C');
+    entryArray[entryCounter].setKey(key);
+    entryArray[entryCounter].setValue(value);
+    entryCounter++;
 }
 
-// not sure what this is supposed to do...
-// ---will be used to flush all the entries we have in our 10,000 size entry array to file
+
+// will be used to flush all the entries we have in our 10,000 size entry array to file
 void trace_flush() {
     for (int i = 0; i < entryCounter; i++)
         entryArray[i].WriteToFile();
@@ -174,6 +184,10 @@ void traceEntry::WriteToFile() {
             *fileStream << "{\"name\": \"" << name << "\", \"id\": \"" << obj
                         << "\", \"ph\": \"" << phase <<"\", \"ts\": "<< ts
                         <<", \"pid\": "<< pid<< ", \"tid\": " << tid <<"}," << endl;
+            break;
+        case 'C':
+            *fileStream << "{\"name\": \"" << name << "\", \"ph\": \"" << phase <<"\", \"ts\": "<< ts
+                        <<", \"args\": {"<< ckey << ": " << cvalue <<"}}," << endl;
             break;
         default: assert(0);
     }

@@ -6,15 +6,13 @@ using namespace std;
 
 const int maxEntries = 10000;
 
-// I think maybe are not supposed to allocate memory? but couldn't make this work without char*
-// --- we are allowed to allocate memory in the trace_start function, so we can create 10,000 instances
-// and reserve that memory in the beginning
+
 class traceEntry{
 public:
-    traceEntry() : name(), cat(), phase('\0'), ts(0), pid(0), tid(0), arguments(), obj(nullptr) {}
+    traceEntry() : name(), cat(), phase('\0'), ts(0), pid(0), tid(0), arguments(), obj(nullptr), ckey(), cvalue() {}
     traceEntry(const char* _name, const char* _cat, const char _phase, const long long int _ts,const int _pid,
-            const int _tid, const  char* _arguments, const void* _obj)
-    : name(_name), cat(_cat), phase(_phase), ts(_ts), pid(_pid), tid(_tid), arguments(_arguments), obj((void*)_obj) {}
+            const int _tid, const  char* _arguments, const void* _obj, const char* _key, const char* val)
+    : name(_name), cat(_cat), phase(_phase), ts(_ts), pid(_pid), tid(_tid), arguments(_arguments), obj((void*)_obj), ckey(_key), cvalue(val) {}
 
     //setters
     void setName(const char* _name) {name = string(_name);}
@@ -25,10 +23,13 @@ public:
     void setTID(const int _tid = 1) {tid = _tid;}
     void setArgs(const char* args) {arguments = string(args);}
     void setObjRef(const void* _obj) {obj = (void*)_obj;}
+    void setKey(const char* _key) {ckey = string(_key);}
+    void setValue(const char* val) {cvalue = string(val);}
 
     void printPhase();
     void printName();
     void WriteToFile();
+    
 private:
     string name;		// event name
     string cat;		    // event category
@@ -37,7 +38,9 @@ private:
     long long int ts;	// trace event time stamp
     int pid;			// process ID
     int tid;			// thread ID
-    void* obj;          // object even obj ref
+    void* obj;          // object event obj ref
+    string ckey;		// counter event key 
+    string cvalue;		// counter event value
 };
 
 // --------------------------------------------------------------------------------

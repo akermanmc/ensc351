@@ -7,15 +7,24 @@ using namespace std;
 
 int multiply(int, int);
 
+int add (int v1, int v2){
+	trace_counter("counter", "add1", "100");
+	int res = v1+v2;
+	trace_counter("counter", "add1", "200");
+	return res;
+}
+
 int main(){
     char filename[10] = "test.json";
     trace_start(filename);
+    add(2,2);
     int g = 40;
     int h = 40;
     for (int i =0; i< 5000; i++)
         multiply(g, h);
 
     trace_end();
+    //add(1, 1);
     return 0;
 }
 
