@@ -187,7 +187,8 @@ void traceEntry::WriteToFile() {
             break;
         case 'C':
             *fileStream << "{\"name\": \"" << name << "\", \"ph\": \"" << phase <<"\", \"ts\": "<< ts
-                        <<", \"args\": {"<< ckey << ": " << cvalue <<"}}," << endl;
+                        <<", \"pid\": "<< pid<< ", \"tid\": " << tid << ", \"args\": {\"" << ckey 
+                        << "\": " << cvalue <<"}}," << endl;
             break;
         default: assert(0);
     }
