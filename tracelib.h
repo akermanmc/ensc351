@@ -7,9 +7,9 @@ extern "C" {
 
 void trace_start(const char* filename);
 
-void trace_event_start(const char* name, const char* categories, const char* arguments = nullptr);
+void trace_event_start(const char* name, const char* categories, const char* arguments);
 
-void trace_event_end(const char* arguments = nullptr);
+void trace_event_end(const char* arguments);
 
 void trace_instant_global(const char* name);
 

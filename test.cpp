@@ -30,20 +30,20 @@ int main(){
 
 int multiply(int a, int b)
 {
-    char name[10];
-    char cat[10];
+    char name[20];
+    char cat[20];
     sprintf(name, "multiply%d",b);
     sprintf(cat, "foo%d", b);
-    trace_event_start(name,cat);
+    trace_event_start(name,cat, nullptr);
     trace_object_new("text", &name);
     if (b <= 0)
     {
-        trace_event_end();
+        trace_event_end(nullptr);
         return a;
     }
     b--;
     int c = a + multiply(a,b);
     trace_object_gone("text", &name);
-    trace_event_end();
+    trace_event_end(nullptr);
     return c;
 }
