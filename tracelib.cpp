@@ -1,4 +1,5 @@
 #include "tracelib.h"
+#include "eventEntries.h"
 #include <fstream>
 #include <cassert>
 #include <chrono>
@@ -112,6 +113,8 @@ void trace_counter(const char *name, const char *key, const char *value) {
     entryArray[entryCounter].setPhase('C');
     entryArray[entryCounter].setKey(key);
     entryArray[entryCounter].setValue(value);
+    entryArray[entryCounter].setPID(1);
+    entryArray[entryCounter].setTID(1);
     entryCounter++;
 }
 

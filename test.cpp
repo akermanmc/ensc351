@@ -36,7 +36,7 @@ int multiply(int a, int b)
     sprintf(cat, "foo%d", b);
     trace_event_start(name,cat);
     trace_object_new("text", &name);
-    if (b < 0)
+    if (b <= 0)
     {
         trace_event_end();
         return a;
